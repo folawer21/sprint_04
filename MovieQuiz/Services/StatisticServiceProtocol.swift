@@ -9,6 +9,9 @@ protocol StatisticServiceProtocol {
     
 }
 
+
+
+
 struct GameRecord: Codable {
     let date : Date
     let correct: Int
@@ -19,3 +22,4 @@ struct GameRecord: Codable {
     }
 }
 
+//Для коммита
