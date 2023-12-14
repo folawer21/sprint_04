@@ -5,8 +5,6 @@
 //  Created by Александр  Сухинин on 09.12.2023.
 //
 
-//я туплю и не могу найти комментарии на гите, с Вашими исправлениями
-
 import Foundation
 
 struct MostPopularMovies: Codable{
@@ -23,14 +21,10 @@ struct MostPopularMovie: Codable{
     
     var resizedImageURL: URL {
         let urlString = imageURL.absoluteString
-        
         let imageUrlString = urlString.components(separatedBy: "._")[0] + "._V0_UX600_.jpg"
-        
         guard let newUrl = URL(string: imageUrlString) else {
             return imageURL
-            
         }
-        
         return newUrl
     }
     

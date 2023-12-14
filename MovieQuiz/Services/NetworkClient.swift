@@ -29,6 +29,7 @@ struct NetworkClient{
             }
             
             guard let data = data else {return }
+
             handler(.success(data))
             
             

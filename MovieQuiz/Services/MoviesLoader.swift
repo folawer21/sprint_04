@@ -38,10 +38,6 @@ struct MoviesLoader: MoviesLoadingProtocol {
             
             case .failure(let error):
                 handler(.failure(error))
-            
-            
-            
-    
             }
         }
     }

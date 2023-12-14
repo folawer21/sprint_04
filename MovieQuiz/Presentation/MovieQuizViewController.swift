@@ -48,12 +48,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showLoadingIndicator(){
-        activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
     
     private func hideLoadingIndicator(){
-        activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
     }
     private func showNetworkError(message: String){
@@ -62,13 +60,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             [weak self] in guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswers = 0
-            self.questionFactory?.requestNextQuestion()
+            self.questionFactory?.loadData()
         })
         alertPresenter?.show(alertModel: errorAlert)
         
     }
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
+        hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
     }
     
@@ -76,11 +74,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showNetworkError(message: error.localizedDescription)
     }
     
-    
-    
-    
     private func show(quiz result: QuizResultsViewModel){
+        
         let alertModel = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText, completion: {
+            [weak self] in
+            guard let self = self else {return }
                     self.currentQuestionIndex = 0
                     self.correctAnswers = 0
                     self.questionFactory?.requestNextQuestion()}
@@ -98,6 +96,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         self.imageView.image = step.image
         self.counterLabel.text = step.questionNumber
         self.textLabel.text = step.question
+        
+        self.imageView.isHidden = false 
     }
     private func showAnswerResult(isCorrect: Bool) {
         if isCorrect{
@@ -117,10 +117,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         if currentQuestionIndex == questionsAmount - 1 {
             yesButton.isEnabled = true
             noButton.isEnabled = true
-            guard let staticService = staticService as? StatisticService
-            else  {
-                return
-            }
+            guard let staticService = staticService as? StatisticService else  {return}
             staticService.gamesCount = staticService.gamesCount + 1
             staticService.store(correct: correctAnswers, total: questionsAmount)
             staticService.addAccurancy(correct: correctAnswers, total: questionsAmount)
@@ -135,7 +132,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             let totalAccurancy = staticService.totalAccurancy
             
             let text = "Ваш результат:\(correctAnswers)/10\nКоличество сыгранных квизов: \(gamesCount)\nРекорд: \(bestGameCorrect)/\(bestGameTotal) (\(bestGameDate))\nСредняя точность: \(totalAccurancy)%"
-            //время поправить
         
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
@@ -162,12 +158,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(viewController: self)
         staticService = StatisticService()
+        imageView.isHidden = true
+        
         
         showLoadingIndicator()
         questionFactory?.loadData()
         
         imageView.layer.cornerRadius = 20
-        
+        activityIndicator.hidesWhenStopped = true
        
     }
     
