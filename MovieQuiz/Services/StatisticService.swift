@@ -15,7 +15,6 @@ final class StatisticService: StatisticServiceProtocol {
                 let newtotalAccurancyString = String(newtotalAccurancy)
                 guard let newData = try? JSONEncoder().encode(newtotalAccurancyString) else {
                     print("Невозможно сохранить результат")
-                    //Можно ошибки сделать
                     return 0
                 }
                 userDefaults.set(newData, forKey: Keys.totalAccurancy.rawValue)
@@ -24,11 +23,9 @@ final class StatisticService: StatisticServiceProtocol {
             }
             guard let totalAccurancy = try? JSONDecoder().decode(String.self, from: data) else {
                 print("Невозможно получить результат")
-                //Можно ошибки сделать
                 return -1 }
             guard let result = Double(totalAccurancy) else {
                 print("Невозможно получить результат")
-                //Можно ошибки сделать
                 return -1
             }
             return result
@@ -51,7 +48,6 @@ final class StatisticService: StatisticServiceProtocol {
                 let newGameCountString = String(newGameCount)
                 guard let newData = try? JSONEncoder().encode(newGameCountString) else {
                     print("Невозможно сохранить результат")
-                    //Можно ошибки сделать
                     return 0
                 }
                 userDefaults.set(newData, forKey: Keys.gamesCount.rawValue)
@@ -59,11 +55,9 @@ final class StatisticService: StatisticServiceProtocol {
             }
             guard let gameCount = try? JSONDecoder().decode(String.self, from: data) else {
                 print("Невозможно получить результат")
-                //Можно ошибки сделать
                 return -1 }
             guard let result = Int(gameCount) else {
                 print("Невозможно получить результат")
-                //Можно ошибки сделать
                 return -1
             }
             return result
