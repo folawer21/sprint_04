@@ -105,10 +105,15 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="DUQ-QF-Jqn">
+                                <rect key="frame" x="197" y="438" width="20" height="20"/>
+                            </activityIndicatorView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" name="YP Black"/>
                         <constraints>
+                            <constraint firstItem="DUQ-QF-Jqn" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="3DF-gX-76V"/>
+                            <constraint firstItem="DUQ-QF-Jqn" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="C9w-It-59z"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="RVe-ee-ZXG" secondAttribute="trailing" constant="20" id="EG2-dB-Mfj"/>
                             <constraint firstItem="RVe-ee-ZXG" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="Mtb-48-Cpg"/>
                             <constraint firstItem="RVe-ee-ZXG" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="kQj-4c-iuv"/>
@@ -116,6 +121,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="activityIndicator" destination="DUQ-QF-Jqn" id="yiw-Gt-FKR"/>
                         <outlet property="counterLabel" destination="Cnd-AZ-02e" id="SIW-xG-xfR"/>
                         <outlet property="imageView" destination="gu8-SE-Wbd" id="N03-xP-PaT"/>
                         <outlet property="noButton" destination="Pf4-Zc-FOx" id="05q-Xx-L3N"/>
