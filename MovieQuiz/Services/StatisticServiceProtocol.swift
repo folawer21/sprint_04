@@ -22,4 +22,3 @@ struct GameRecord: Codable {
     }
 }
 
-//Для коммита
