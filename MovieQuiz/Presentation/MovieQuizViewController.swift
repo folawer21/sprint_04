@@ -2,12 +2,11 @@ import UIKit
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var correctAnswers = 0
     
-    private var currentQuestion: QuizQuestion?
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
     private var staticService: StatisticServiceProtocol?
     private let presenter = MovieQuizPresenter()
-    
+    private var currentQuestion: QuizQuestion?
     
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private var imageView: UIImageView!
@@ -15,36 +14,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private var textLabel: UILabel!
     @IBOutlet private var noButton: UIButton!
     @IBOutlet private var yesButton: UIButton!
-    @IBAction private func noButtonClicked(_ sender: Any) {
+    
+    @IBAction private func yesButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
+        presenter.currentQuestion = currentQuestion
+        presenter.yesButtonClicked()
         
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        if currentQuestion.correctAnswer == false {
-            showAnswerResult(isCorrect: true)
-        }
-        else {
-            showAnswerResult(isCorrect: false)
-        }
     }
-    @IBAction private func yesButtonClicked(_ sender: Any) {
+    
+    @IBAction private func noButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
-        
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        
-        if currentQuestion.correctAnswer == true {
-            showAnswerResult(isCorrect: true)
-        }
-        else {
-            showAnswerResult(isCorrect: false)
-        }
+        presenter.currentQuestion = currentQuestion
+        presenter.noButtonClicked()
     }
+    
     
     private func showLoadingIndicator(){
         activityIndicator.startAnimating()
@@ -93,7 +78,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         self.imageView.isHidden = false 
     }
-    private func showAnswerResult(isCorrect: Bool) {
+    func showAnswerResult(isCorrect: Bool) {
         if isCorrect{
             correctAnswers += 1
         }
@@ -147,6 +132,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        presenter.viewController = self
         
         
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)

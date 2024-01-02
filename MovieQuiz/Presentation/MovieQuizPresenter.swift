@@ -11,6 +11,22 @@ import UIKit
 final class MovieQuizPresenter{
     let questionsAmount = 10
     private var currentQuestionIndex: Int  = 0
+    var currentQuestion: QuizQuestion?
+    weak var viewController: MovieQuizViewController?
+    
+    func yesButtonClicked() {
+            guard let currentQuestion = currentQuestion else {
+            return
+        }
+        viewController?.showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
+    }
+    
+    func noButtonClicked() {
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        viewController?.showAnswerResult(isCorrect:  false == currentQuestion.correctAnswer)
+    }
     
     
     func isLastQuestion() -> Bool {
