@@ -9,19 +9,20 @@ import Foundation
 import UIKit
 
 final class MovieQuizPresenter:QuestionFactoryDelegate {
-    var correctAnswers = 0
-    let questionsAmount = 10
+    private var correctAnswers = 0
+    private let questionsAmount = 10
     private var currentQuestionIndex: Int  = 0
     
-    var questionFactory: QuestionFactoryProtocol?
-    var currentQuestion: QuizQuestion?
-    weak var viewController: MovieQuizViewController?
-    var staticService: StatisticServiceProtocol?
+    private var questionFactory: QuestionFactoryProtocol?
+    private var currentQuestion: QuizQuestion?
+    private weak var viewController: MovieQuizViewController?
+    private var staticService: StatisticServiceProtocol?
     
     init(viewController: MovieQuizViewController) {
         self.viewController = viewController
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
+        staticService = StatisticService()
         viewController.showLoadingIndicator()
     }
     
@@ -64,7 +65,7 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
         guard let currentQuestion = currentQuestion else {
             return
         }
-        viewController?.showAnswerResult(isCorrect: isYes)
+        proceedWithAnswer(isCorrect: isYes)
     }
     
     func didAnswer(isCorrectAnswer: Bool){
@@ -80,6 +81,7 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
     func restartGame(){
         currentQuestionIndex = 0
         correctAnswers = 0
+        viewController?.hideBorder()
         questionFactory?.requestNextQuestion()
     }
     
@@ -95,7 +97,7 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
     }
     
    
-    func showNextQuestionOrResults(){
+    private func proceedToNextQuestionOrResults(){
         if isLastQuestion(){
             guard let staticService = staticService as? StatisticService else  {return}
             staticService.gamesCount = staticService.gamesCount + 1
@@ -122,6 +124,17 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
             switchToNextQuestionIndex()
             viewController?.hideBorder()
             questionFactory?.requestNextQuestion()
+        }
+    }
+    
+    private func proceedWithAnswer(isCorrect: Bool) {
+        didAnswer(isCorrectAnswer: isCorrect)
+        viewController?.showBorder(isCorrect: isCorrect)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            [weak self ] in
+            guard let self = self else {return}
+            self.proceedToNextQuestionOrResults()
+            self.viewController?.enableButtons()
         }
     }
     

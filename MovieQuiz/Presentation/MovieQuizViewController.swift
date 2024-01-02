@@ -3,7 +3,6 @@ final class MovieQuizViewController: UIViewController{
     
     
     private var alertPresenter: AlertPresenterProtocol?
-    private var staticService: StatisticServiceProtocol?
     private var presenter : MovieQuizPresenter!
         
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
@@ -61,6 +60,18 @@ final class MovieQuizViewController: UIViewController{
     func hideBorder(){
         imageView.layer.borderWidth = 0
     }
+    
+    func showBorder(isCorrect: Bool){
+        imageView.layer.masksToBounds = true
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
+    
+    func enableButtons(){
+        self.yesButton.isEnabled = true
+        self.noButton.isEnabled = true
+    }
+    
    func show(quiz step: QuizStepViewModel){
         self.imageView.image = step.image
         self.counterLabel.text = step.questionNumber
@@ -68,23 +79,8 @@ final class MovieQuizViewController: UIViewController{
         
         self.imageView.isHidden = false 
     }
-    func showAnswerResult(isCorrect: Bool) {
-        
-        
-        self.presenter.didAnswer(isCorrectAnswer: isCorrect)
-        imageView.layer.masksToBounds = true
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            [weak self ] in
-            guard let self = self else {return}
-            self.presenter.staticService = self.staticService
-            self.presenter.correctAnswers = self.presenter.correctAnswers
-            self.presenter.showNextQuestionOrResults()
-            self.yesButton.isEnabled = true
-            self.noButton.isEnabled = true
-        }
-    }
+   
+    
     
     
   
@@ -93,16 +89,11 @@ final class MovieQuizViewController: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
         alertPresenter = AlertPresenter(viewController: self)
-        staticService = StatisticService()
         presenter = MovieQuizPresenter(viewController: self )
         imageView.isHidden = true
         
-        
         showLoadingIndicator()
-    
-        
         imageView.layer.cornerRadius = 20
         activityIndicator.hidesWhenStopped = true
        
