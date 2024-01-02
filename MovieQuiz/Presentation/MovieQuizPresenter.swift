@@ -9,23 +9,28 @@ import Foundation
 import UIKit
 
 final class MovieQuizPresenter{
+    var correctAnswers = 0
     let questionsAmount = 10
     private var currentQuestionIndex: Int  = 0
+    
+    var questionFactory: QuestionFactoryProtocol?
     var currentQuestion: QuizQuestion?
     weak var viewController: MovieQuizViewController?
+    var staticService: StatisticServiceProtocol?
     
     func yesButtonClicked() {
-            guard let currentQuestion = currentQuestion else {
-            return
-        }
-        viewController?.showAnswerResult(isCorrect: true == currentQuestion.correctAnswer)
+        didAnswer(isYes: true)
     }
     
     func noButtonClicked() {
+        didAnswer(isYes: false)
+    }
+    
+    private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else {
             return
         }
-        viewController?.showAnswerResult(isCorrect:  false == currentQuestion.correctAnswer)
+        viewController?.showAnswerResult(isCorrect: isYes)
     }
     
     
@@ -48,5 +53,44 @@ final class MovieQuizPresenter{
         return stepViewModel
     }
     
+    func didReceiveNextQuestion(question: QuizQuestion?){
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async {
+            [weak self] in self?.viewController?.show(quiz: viewModel)
+        }
+    }
+    func showNextQuestionOrResults(){
+        if isLastQuestion(){
+            guard let staticService = staticService as? StatisticService else  {return}
+            staticService.gamesCount = staticService.gamesCount + 1
+            staticService.store(correct: correctAnswers, total: questionsAmount)
+            staticService.addAccurancy(correct: correctAnswers, total: questionsAmount)
+            var dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "dd.MM.YY hh:mm"
+            let date = dateFormatter.string(from: staticService.bestGame.date)
+            let gamesCount = staticService.gamesCount
+            let bestGameCorrect = staticService.bestGame.correct
+            let bestGameTotal = staticService.bestGame.total
+            let bestGameDate = date
+            let totalAccurancy = staticService.totalAccurancy
+        
+            let text = "Ваш результат:\(correctAnswers)/10\nКоличество сыгранных квизов: \(gamesCount)\nРекорд: \(bestGameCorrect)/\(bestGameTotal) (\(bestGameDate))\nСредняя точность: \(totalAccurancy)%"
+        
+            let viewModel = QuizResultsViewModel(
+                title: "Этот раунд окончен!",
+                text: text,
+                buttonText: "Сыграть ещё раз")
+            viewController?.show(quiz: viewModel)
+        }
+        else {
+            switchToNextQuestionIndex()
+            questionFactory?.requestNextQuestion()
+        }
+    }
     
 }

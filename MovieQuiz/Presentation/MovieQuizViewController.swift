@@ -1,13 +1,16 @@
 import UIKit
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+    
+  
+   
+    
     private var correctAnswers = 0
     
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenterProtocol?
     private var staticService: StatisticServiceProtocol?
     private let presenter = MovieQuizPresenter()
-    private var currentQuestion: QuizQuestion?
-    
+        
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private var imageView: UIImageView!
     @IBOutlet private var counterLabel: UILabel!
@@ -18,7 +21,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
-        presenter.currentQuestion = currentQuestion
+
         presenter.yesButtonClicked()
         
     }
@@ -26,7 +29,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
-        presenter.currentQuestion = currentQuestion
         presenter.noButtonClicked()
     }
     
@@ -58,7 +60,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         showNetworkError(message: error.localizedDescription)
     }
     
-    private func show(quiz result: QuizResultsViewModel){
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        presenter.didReceiveNextQuestion(question: question)
+    }
+  
+    
+    func show(quiz result: QuizResultsViewModel){
         
         let alertModel = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText, completion: {
             [weak self] in
@@ -71,7 +78,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
  
-    private func show(quiz step: QuizStepViewModel){
+   func show(quiz step: QuizStepViewModel){
         self.imageView.image = step.image
         self.counterLabel.text = step.questionNumber
         self.textLabel.text = step.question
@@ -79,6 +86,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         self.imageView.isHidden = false 
     }
     func showAnswerResult(isCorrect: Bool) {
+        imageView.layer.borderWidth = 0
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
         if isCorrect{
             correctAnswers += 1
         }
@@ -88,56 +98,24 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             [weak self ] in
             guard let self = self else {return}
-           self.showNextQuestionOrResults()
+            self.presenter.staticService = self.staticService
+            self.presenter.questionFactory = self.questionFactory
+            self.presenter.correctAnswers = self.correctAnswers
+            self.presenter.showNextQuestionOrResults()
         }
     }
-    private func showNextQuestionOrResults(){
-        imageView.layer.borderWidth = 0
-        if presenter.isLastQuestion(){
-            yesButton.isEnabled = true
-            noButton.isEnabled = true
-            guard let staticService = staticService as? StatisticService else  {return}
-            staticService.gamesCount = staticService.gamesCount + 1
-            staticService.store(correct: correctAnswers, total: presenter.questionsAmount)
-            staticService.addAccurancy(correct: correctAnswers, total: presenter.questionsAmount)
-            
-            var dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd.MM.YY hh:mm"
-            let date = dateFormatter.string(from: staticService.bestGame.date)
-            let gamesCount = staticService.gamesCount
-            let bestGameCorrect = staticService.bestGame.correct
-            let bestGameTotal = staticService.bestGame.total
-            let bestGameDate = date
-            let totalAccurancy = staticService.totalAccurancy
-            
-            let text = "Ваш результат:\(correctAnswers)/10\nКоличество сыгранных квизов: \(gamesCount)\nРекорд: \(bestGameCorrect)/\(bestGameTotal) (\(bestGameDate))\nСредняя точность: \(totalAccurancy)%"
-        
-            let viewModel = QuizResultsViewModel(
-                title: "Этот раунд окончен!",
-                text: text,
-                buttonText: "Сыграть ещё раз")
-            show(quiz: viewModel)
-        }
-        else {
-            presenter.switchToNextQuestionIndex()
-            questionFactory?.requestNextQuestion()
-            yesButton.isEnabled = true
-            noButton.isEnabled = true
-            
-        }
-    }
+    
     
   
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter.viewController = self
-        
-        
+
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(viewController: self)
         staticService = StatisticService()
+        presenter.viewController = self
         imageView.isHidden = true
         
         
@@ -151,17 +129,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     // MARK: - QuestionFactoryDelegate
     
-    func didReceiveNextQuestion(question: QuizQuestion?){
-        guard let question = question else {
-            return
-        }
-        
-        currentQuestion = question
-        let viewModel = presenter.convert(model: question)
-        DispatchQueue.main.async {
-            [weak self] in self?.show(quiz: viewModel)
-        }
-    }
+   
     
 }
 
