@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-final class MovieQuizPresenter{
+final class MovieQuizPresenter:QuestionFactoryDelegate {
     var correctAnswers = 0
     let questionsAmount = 10
     private var currentQuestionIndex: Int  = 0
@@ -17,6 +17,40 @@ final class MovieQuizPresenter{
     var currentQuestion: QuizQuestion?
     weak var viewController: MovieQuizViewController?
     var staticService: StatisticServiceProtocol?
+    
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        questionFactory?.loadData()
+        viewController.showLoadingIndicator()
+    }
+    
+    // MARK: - QuestionFactoryDelegate
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
+    }
+    
+    func didReceiveNextQuestion(question: QuizQuestion?){
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async {
+            [weak self] in self?.viewController?.show(quiz: viewModel)
+        }
+    }
+    
+    func loadDataAfterError(){
+        questionFactory?.loadData()
+    }
+    
     
     func yesButtonClicked() {
         didAnswer(isYes: true)
@@ -33,13 +67,20 @@ final class MovieQuizPresenter{
         viewController?.showAnswerResult(isCorrect: isYes)
     }
     
+    func didAnswer(isCorrectAnswer: Bool){
+        if isCorrectAnswer{
+            correctAnswers += 1
+        }
+    }
     
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func resetQuestionIndex(){
+    func restartGame(){
         currentQuestionIndex = 0
+        correctAnswers = 0
+        questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestionIndex(){
@@ -53,17 +94,7 @@ final class MovieQuizPresenter{
         return stepViewModel
     }
     
-    func didReceiveNextQuestion(question: QuizQuestion?){
-        guard let question = question else {
-            return
-        }
-        
-        currentQuestion = question
-        let viewModel = convert(model: question)
-        DispatchQueue.main.async {
-            [weak self] in self?.viewController?.show(quiz: viewModel)
-        }
-    }
+   
     func showNextQuestionOrResults(){
         if isLastQuestion(){
             guard let staticService = staticService as? StatisticService else  {return}
@@ -89,6 +120,7 @@ final class MovieQuizPresenter{
         }
         else {
             switchToNextQuestionIndex()
+            viewController?.hideBorder()
             questionFactory?.requestNextQuestion()
         }
     }
