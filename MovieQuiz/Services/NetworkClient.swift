@@ -6,7 +6,12 @@
 //
 
 import Foundation
-struct NetworkClient{
+
+protocol NetworkRouting{
+    func fetch(url: URL, handler: @escaping (Result<Data,Error>) -> Void)
+}
+
+struct NetworkClient: NetworkRouting{
     
     private enum NetworkError: Error{
         case codeError
@@ -14,7 +19,6 @@ struct NetworkClient{
     
     func fetch(url: URL, handler: @escaping(Result<Data,Error>) -> Void){
         let request = URLRequest(url: url)
-        
         let task = URLSession.shared.dataTask(with: request){ data, response,error in
             
             if let error = error {
@@ -31,13 +35,7 @@ struct NetworkClient{
             guard let data = data else {return }
 
             handler(.success(data))
-            
-            
-            
         }
         task.resume()
     }
-   
-    
-    
 }
