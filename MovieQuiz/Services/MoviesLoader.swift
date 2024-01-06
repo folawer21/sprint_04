@@ -14,7 +14,6 @@ protocol MoviesLoadingProtocol{
 struct MoviesLoader: MoviesLoadingProtocol {
     
     private let networkClient: NetworkRouting
-    
     init(networkClient: NetworkRouting = NetworkClient()){
         self.networkClient = networkClient
     }
@@ -26,9 +25,7 @@ struct MoviesLoader: MoviesLoadingProtocol {
         return url
     }
     
-    
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void) {
-        
         let mostPopularMovies =  networkClient.fetch(url: mostPopularMoviesUrl){ result in
             switch result {
             case .success(let data):
@@ -39,14 +36,9 @@ struct MoviesLoader: MoviesLoadingProtocol {
                 catch{
                     handler(.failure(error ))
                 }
-            
             case .failure(let error):
                 handler(.failure(error))
             }
         }
     }
-        
-        
-        
-    
 }

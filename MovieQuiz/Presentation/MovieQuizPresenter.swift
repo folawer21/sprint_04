@@ -15,10 +15,10 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
     
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     private var staticService: StatisticServiceProtocol?
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         questionFactory?.loadData()
@@ -52,14 +52,10 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
         questionFactory?.loadData()
     }
     
-    
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
+    func buttonIsClicked(isYes: Bool) {
+       didAnswer(isYes: isYes)
     }
-    
-    func noButtonClicked() {
-        didAnswer(isYes: false)
-    }
+
     
     private func didAnswer(isYes: Bool) {
         guard let currentQuestion = currentQuestion else {
@@ -103,16 +99,16 @@ final class MovieQuizPresenter:QuestionFactoryDelegate {
             staticService.gamesCount = staticService.gamesCount + 1
             staticService.store(correct: correctAnswers, total: questionsAmount)
             staticService.addAccurancy(correct: correctAnswers, total: questionsAmount)
-            var dateFormatter = DateFormatter()
+            let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "dd.MM.YY hh:mm"
-            let date = dateFormatter.string(from: staticService.bestGame.date)
-            let gamesCount = staticService.gamesCount
-            let bestGameCorrect = staticService.bestGame.correct
-            let bestGameTotal = staticService.bestGame.total
-            let bestGameDate = date
-            let totalAccurancy = staticService.totalAccurancy
+//            let date = dateFormatter.string(from: staticService.bestGame.date)
+//            let gamesCount = staticService.gamesCount
+//            let bestGameCorrect = staticService.bestGame.correct
+//            let bestGameTotal = staticService.bestGame.total
+//            let bestGameDate = date
+//            let totalAccurancy = staticService.totalAccurancy
         
-            let text = "Ваш результат:\(correctAnswers)/10\nКоличество сыгранных квизов: \(gamesCount)\nРекорд: \(bestGameCorrect)/\(bestGameTotal) (\(bestGameDate))\nСредняя точность: \(totalAccurancy)%"
+            let text = "Ваш результат:\(correctAnswers)/10\nКоличество сыгранных квизов: \(staticService.gamesCount)\nРекорд: \(staticService.bestGame.correct)/\(staticService.bestGame.total) (\(dateFormatter.string(from: staticService.bestGame.date)))\nСредняя точность: \(staticService.totalAccurancy)%"
         
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",

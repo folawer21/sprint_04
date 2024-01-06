@@ -1,9 +1,7 @@
 import UIKit
-final class MovieQuizViewController: UIViewController{
-    
-    
+final class MovieQuizViewController: UIViewController,MovieQuizViewControllerProtocol{
     private var alertPresenter: AlertPresenterProtocol?
-    private var presenter : MovieQuizPresenter!
+    private var presenter : MovieQuizPresenter?
         
     @IBOutlet private var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private var imageView: UIImageView!
@@ -15,15 +13,14 @@ final class MovieQuizViewController: UIViewController{
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
-
-        presenter.yesButtonClicked()
+        presenter?.buttonIsClicked(isYes: true)
         
     }
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
         noButton.isEnabled = false
         yesButton.isEnabled = false
-        presenter.noButtonClicked()
+        presenter?.buttonIsClicked(isYes: false)
     }
     
     
@@ -36,22 +33,21 @@ final class MovieQuizViewController: UIViewController{
     }
     func showNetworkError(message: String){
         hideLoadingIndicator()
-        var errorAlert: AlertModel = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать ещё раз", completion: {
+        let errorAlert: AlertModel = AlertModel(title: "Ошибка", message: message, buttonText: "Попробовать ещё раз", completion: {
             [weak self] in guard let self = self else { return }
-            self.presenter.questionFactory?.loadData()
-            self.presenter.restartGame()
+            self.presenter?.loadDataAfterError()
+            self.presenter?.restartGame()
             
         })
         alertPresenter?.show(alertModel: errorAlert)
         
     }
 
-    
     func show(quiz result: QuizResultsViewModel){
         
         let alertModel = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText, completion: { [weak self] in
                 guard let self = self else {return }
-                self.presenter.restartGame()
+                self.presenter?.buttonIsClicked(isYes: true)
                 }
         )
         alertPresenter?.show(alertModel: alertModel)
@@ -80,11 +76,6 @@ final class MovieQuizViewController: UIViewController{
         self.imageView.isHidden = false 
     }
    
-    
-    
-    
-  
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -92,14 +83,11 @@ final class MovieQuizViewController: UIViewController{
         alertPresenter = AlertPresenter(viewController: self)
         presenter = MovieQuizPresenter(viewController: self )
         imageView.isHidden = true
-        
         showLoadingIndicator()
         imageView.layer.cornerRadius = 20
         activityIndicator.hidesWhenStopped = true
        
     }
-    
-   
-    
+
 }
 

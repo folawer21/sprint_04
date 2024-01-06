@@ -3,7 +3,7 @@ import Foundation
 enum LoadErrors : Error {
     case failedDownloadingMovies
 }
-class QuestionFactory: QuestionFactoryProtocol{
+final class QuestionFactory: QuestionFactoryProtocol{
     
     private weak var delegate: QuestionFactoryDelegate?
     private let movieLoader: MoviesLoadingProtocol
@@ -15,26 +15,19 @@ class QuestionFactory: QuestionFactoryProtocol{
     }
     
     func loadData(){
-        movieLoader.loadMovies{
-            [weak self ] result in
+        movieLoader.loadMovies{ [weak self ] result in
             DispatchQueue.main.async {
                 guard let self = self else {return }
-                
                 switch result {
-                case .success(let mostPopularMovies):
-                    if mostPopularMovies.items.isEmpty {
-                        self.delegate?.didFailToLoadData(with:LoadErrors.failedDownloadingMovies )
-                    }
-                            
-                            
-                    self.movies = mostPopularMovies.items
-                    
-                    self.delegate?.didLoadDataFromServer()
-                case .failure(let error):
-                    self.delegate?.didFailToLoadData(with: error)
+                    case .success(let mostPopularMovies):
+                        if mostPopularMovies.items.isEmpty {
+                            self.delegate?.didFailToLoadData(with:LoadErrors.failedDownloadingMovies )
+                        }
+                        self.movies = mostPopularMovies.items
+                        self.delegate?.didLoadDataFromServer()
+                    case .failure(let error):
+                        self.delegate?.didFailToLoadData(with: error)
                 }
-            
-            
             }
         }
     }
@@ -46,7 +39,6 @@ class QuestionFactory: QuestionFactoryProtocol{
             
             let index = (0..<self.movies.count).randomElement() ?? 0
             guard let movie = self.movies[safe: index] else {return }
-            
             var imageData = Data()
             
             do {
