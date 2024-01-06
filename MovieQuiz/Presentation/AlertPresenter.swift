@@ -16,13 +16,9 @@ final class AlertPresenter: AlertPresenterProtocol {
     
     func show (alertModel: AlertModel){
         let alert = UIAlertController(title: alertModel.title, message: alertModel.message, preferredStyle: .alert)
+        alert.view.accessibilityIdentifier = "Game results"
         let action = UIAlertAction(title: alertModel.buttonText, style: .default) {  _ in
             alertModel.completion()
-//        self.currentQuestionIndex = 0
-//        self.correctAnswers = 0
-//
-//        self.questionFactory?.requestNextQuestion() 
-        
         }
         alert.addAction(action)
         viewController?.present(alert, animated: true)
